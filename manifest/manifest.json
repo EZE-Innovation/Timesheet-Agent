@@ -1,0 +1,50 @@
+{
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.16/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.16",
+  "version": "1.0.0",
+  "id": "REPLACE_WITH_YOUR_APP_ID_GUID",
+  "packageName": "com.yourcompany.echobot",
+  "developer": {
+    "name": "Your Company Name",
+    "websiteUrl": "https://www.example.com",
+    "privacyUrl": "https://www.example.com/privacy",
+    "termsOfUseUrl": "https://www.example.com/terms"
+  },
+  "name": {
+    "short": "Echo Bot",
+    "full": "Echo Bot for Microsoft Teams"
+  },
+  "description": {
+    "short": "Echoes messages back in 1:1 and channels.",
+    "full": "A production-ready Echo Bot that replies with the exact same message it receives in 1:1 chat and channel conversations."
+  },
+  "icons": {
+    "outline": "outline.png",
+    "color": "color.png"
+  },
+  "accentColor": "#4464EE",
+  "bots": [
+    {
+      "botId": "REPLACE_WITH_YOUR_MICROSOFT_APP_ID",
+      "scopes": [
+        "personal",
+        "team",
+        "groupChat"
+      ],
+      "supportsFiles": false,
+      "isNotificationOnly": false,
+      "commandLists": [
+        {
+          "scopes": ["personal", "team", "groupChat"],
+          "commands": [
+            {
+              "title": "Echo",
+              "description": "Send a message and the bot echoes it back"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "validDomains": []
+}
