@@ -1,0 +1,19 @@
+{
+    "name": "Echo BOT",
+    "description": "",
+    "services": [
+        {
+            "type": "endpoint",
+            "name": "http://localhost:3978/api/messages",
+            "id": "827e07c0-0bc0-11f1-94dc-57040f7cb836",
+            "appId": "",
+            "appPassword": "",
+            "tenantId": "",
+            "endpoint": "http://localhost:3978/api/messages"
+        }
+    ],
+    "padlock": "",
+    "version": "2.0",
+    "path": "D:\\OneDrive - CLOUD EZE PRIVATE LIMITED\\Desktop\\Echo BOT\\Echo BOT.bot",
+    "overrides": null
+}
