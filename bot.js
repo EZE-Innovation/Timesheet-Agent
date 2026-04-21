@@ -33,10 +33,16 @@ class TimesheetBot extends ActivityHandler {
         // Forward message to Flowise
         const response = await axios.post(
           'https://flowise-app.wonderfuldesert-67959724.southindia.azurecontainerapps.io/api/v1/prediction/a3f2912a-564a-4317-872b-6eb079a2a831',
-          { question: userMessage }
+          { question: userMessage },
+          {
+            headers: {
+              "Content-Type": "application/json"
+            }
+          }
         );
 
-        await context.sendActivity(response.data.text);
+        const botReply = response.data?.text || "No response from assistant";
+        await context.sendActivity(botReply);
 
       } catch (err) {
         console.error('[TimesheetBot] onMessage error:', err.message);
