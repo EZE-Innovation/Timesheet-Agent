@@ -17,6 +17,7 @@ class TimesheetBot extends ActivityHandler {
     this.onMessage(async (context, next) => {
       try {
         const userMessage = context.activity.text?.trim() || '';
+        console.log("FULL USER OBJECT:", context.activity.from);
         const userId = context.activity.from.id;
 
         if (!userMessage) {
