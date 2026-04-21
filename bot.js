@@ -9,6 +9,52 @@ const axios = require('axios');
 const FLOWISE_URL = process.env.FLOWISE_URL;
 const FLOWISE_API_KEY = process.env.FLOWISE_API_KEY;
 
+const getGraphToken = async () => {
+  const res = await axios.post(
+    `https://login.microsoftonline.com/${process.env.TENANT_ID}/oauth2/v2.0/token`,
+    new URLSearchParams({
+      client_id: process.env.CLIENT_ID,
+      client_secret: process.env.CLIENT_SECRET,
+      scope: "https://graph.microsoft.com/.default",
+      grant_type: "client_credentials"
+    })
+  );
+  return res.data.access_token;
+};
+
+const getUserEmail = async (aadObjectId) => {
+  const token = await getGraphToken();
+
+  const res = await axios.get(
+    `https://graph.microsoft.com/v1.0/users/${aadObjectId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    }
+  );
+
+  return res.data.mail || res.data.userPrincipalName;
+};
+
+const getUserDetails = async (aadObjectId) => {
+  const token = await getGraphToken();
+
+  const res = await axios.get(
+    `https://graph.microsoft.com/v1.0/users/${aadObjectId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    }
+  );
+
+  return {
+    email: res.data.mail || res.data.userPrincipalName,
+    name: res.data.displayName
+  };
+};
+
 class TimesheetBot extends ActivityHandler {
   constructor() {
     super();
@@ -18,7 +64,12 @@ class TimesheetBot extends ActivityHandler {
       try {
         const userMessage = context.activity.text?.trim() || '';
         console.log("FULL USER OBJECT:", context.activity.from);
-        const userId = context.activity.from.id;
+        const userId = context.activity.from.aadObjectId;
+        const userDetails = await getUserDetails(userId);
+        const userEmail = userDetails.email;
+        const userName = userDetails.name;
+        console.log("User Email:", userEmail);
+        console.log("User Name:", userName);
 
         if (!userMessage) {
           await context.sendActivity(
@@ -34,7 +85,11 @@ class TimesheetBot extends ActivityHandler {
         // Forward message to Flowise
         const response = await axios.post(
           'https://flowise-app.wonderfuldesert-67959724.southindia.azurecontainerapps.io/api/v1/prediction/a3f2912a-564a-4317-872b-6eb079a2a831',
-          { question: userMessage },
+          {
+            question: userMessage,
+            email: userEmail,
+            name: userName
+          },
           {
             headers: {
               "Content-Type": "application/json"
@@ -43,7 +98,10 @@ class TimesheetBot extends ActivityHandler {
         );
 
         const botReply = response.data?.text || "No response from assistant";
-        await context.sendActivity(botReply);
+        const finalReply = userName
+          ? `Hi ${userName.split(' ')[0]}, ${botReply}`
+          : botReply;
+        await context.sendActivity(finalReply);
 
       } catch (err) {
         console.error('[TimesheetBot] onMessage error:', err.message);
