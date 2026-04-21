@@ -32,32 +32,16 @@ class TimesheetBot extends ActivityHandler {
 
         // Forward message to Flowise
         const response = await axios.post(
-          FLOWISE_URL,
-          {
-            question: userMessage,
-            sessionId: userId  // maintains separate memory per Teams user
-          },
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${FLOWISE_API_KEY}`
-            },
-            timeout: 60000  // 60s — allows time for multi-tool chains
-          }
+          'https://flowise-app.wonderfuldesert-67959724.southindia.azurecontainerapps.io/api/v1/prediction/a3f2912a-564a-4317-872b-6eb079a2a831',
+          { question: userMessage }
         );
 
-        const reply =
-          response.data.text ||
-          response.data.answer ||
-          response.data.output ||
-          "Sorry, I couldn't process that request. Please try again.";
-
-        await context.sendActivity(MessageFactory.text(reply));
+        await context.sendActivity(response.data.text);
 
       } catch (err) {
         console.error('[TimesheetBot] onMessage error:', err.message);
         await context.sendActivity(
-          'Sorry, something went wrong while processing your message. Please try again.'
+          "Sorry, I’m unable to process your request right now."
         );
       }
 
