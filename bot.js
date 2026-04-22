@@ -72,15 +72,20 @@ class TimesheetBot extends ActivityHandler {
         // ✅ Correct payload log
         console.log("FINAL PAYLOAD:", {
           question: userMessage,
+          email: userEmail,
           sessionId: context.activity.from.aadObjectId
         });
 
         // Call Flowise
+        if (!userEmail) {
+          console.error("User email is missing!");
+        }
         console.log("SESSION ID:", context.activity.from.aadObjectId);
         const response = await axios.post(
           'https://flowise-app.wonderfuldesert-67959724.southindia.azurecontainerapps.io/api/v1/prediction/a3f2912a-564a-4317-872b-6eb079a2a831',
           {
             question: userMessage,
+            email: userEmail,
             sessionId: context.activity.from.aadObjectId
           },
           {
