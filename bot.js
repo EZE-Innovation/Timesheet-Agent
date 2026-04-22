@@ -101,7 +101,13 @@ class TimesheetBot extends ActivityHandler {
           }
         );
 
-        const botReply = response.data?.text || "No response from assistant";
+        console.log("FLOWISE RAW RESPONSE:", JSON.stringify(response.data, null, 2));
+
+        const botReply =
+        response.data?.text ||
+        response.data?.answer ||
+        response.data?.response ||
+        JSON.stringify(response.data);
         const finalReply = userName
           ? `Hi ${userName.split(' ')[0]}, ${botReply}`
           : botReply;
