@@ -83,6 +83,10 @@ class TimesheetBot extends ActivityHandler {
         await context.sendActivity({ type: 'typing' });
 
         // Forward message to Flowise
+        console.log("Sending to Flowise:", {
+          question: userMessage,
+          email: userEmail
+        });
         const response = await axios.post(
           'https://flowise-app.wonderfuldesert-67959724.southindia.azurecontainerapps.io/api/v1/prediction/a3f2912a-564a-4317-872b-6eb079a2a831',
           {
