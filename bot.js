@@ -3,10 +3,10 @@
  * Forwards incoming messages to Flowise AI agent for Workday timesheet management.
  */
 
-const { ActivityHandler, MessageFactory } = require('botbuilder');
+const { ActivityHandler } = require('botbuilder');
 const axios = require('axios');
 
-const FLOWISE_URL = process.env.FLOWISE_URL;
+const FLOWISE_URL = ''; // <-- ADD YOUR FLOWISE URL HERE
 const FLOWISE_API_KEY = process.env.FLOWISE_API_KEY;
 
 const getGraphToken = async () => {
@@ -20,21 +20,6 @@ const getGraphToken = async () => {
     })
   );
   return res.data.access_token;
-};
-
-const getUserEmail = async (aadObjectId) => {
-  const token = await getGraphToken();
-
-  const res = await axios.get(
-    `https://graph.microsoft.com/v1.0/users/${aadObjectId}`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    }
-  );
-
-  return res.data.mail || res.data.userPrincipalName;
 };
 
 const getUserDetails = async (aadObjectId) => {
@@ -59,15 +44,17 @@ class TimesheetBot extends ActivityHandler {
   constructor() {
     super();
 
-    // Handle incoming messages (1:1 chat and channel messages)
     this.onMessage(async (context, next) => {
       try {
         const userMessage = context.activity.text?.trim() || '';
         console.log("FULL USER OBJECT:", context.activity.from);
+
         const userId = context.activity.from.aadObjectId;
         const userDetails = await getUserDetails(userId);
+
         const userEmail = userDetails.email;
         const userName = userDetails.name;
+
         console.log("User Email:", userEmail);
         console.log("User Name:", userName);
 
@@ -79,42 +66,50 @@ class TimesheetBot extends ActivityHandler {
           return;
         }
 
-        // Show typing indicator while Flowise processes
+        // Typing indicator
         await context.sendActivity({ type: 'typing' });
 
-        // Forward message to Flowise
-        console.log("Sending to Flowise:", {
-          question: userMessage,
+        // ✅ Correct payload log
+        console.log("FINAL PAYLOAD:", {
+          input: userMessage,
           email: userEmail
         });
+
+        // Call Flowise
         const response = await axios.post(
           'https://flowise-app.wonderfuldesert-67959724.southindia.azurecontainerapps.io/api/v1/prediction/a3f2912a-564a-4317-872b-6eb079a2a831',
           {
             input: userMessage,
-            email: userEmail,
-            name: userName
+            email: userEmail
           },
           {
             headers: {
               "Content-Type": "application/json"
+              // Optional:
+              // Authorization: `Bearer ${FLOWISE_API_KEY}`
             }
           }
         );
 
+        // Debug Flowise response
         console.log("FLOWISE RAW RESPONSE:", JSON.stringify(response.data, null, 2));
 
+        // Flexible response handling
         const botReply =
-        response.data?.text ||
-        response.data?.answer ||
-        response.data?.response ||
-        JSON.stringify(response.data);
+          response.data?.text ||
+          response.data?.answer ||
+          response.data?.response ||
+          JSON.stringify(response.data);
+
         const finalReply = userName
           ? `Hi ${userName.split(' ')[0]}, ${botReply}`
           : botReply;
+
         await context.sendActivity(finalReply);
 
       } catch (err) {
-        console.error('[TimesheetBot] onMessage error:', err.message);
+        console.error('[TimesheetBot] FULL ERROR:', err.response?.data || err.message);
+
         await context.sendActivity(
           "Sorry, I’m unable to process your request right now."
         );
@@ -123,7 +118,6 @@ class TimesheetBot extends ActivityHandler {
       await next();
     });
 
-    // Handle members added (e.g. bot added to channel or 1:1 chat)
     this.onMembersAdded(async (context, next) => {
       const membersAdded = context.activity.membersAdded || [];
       const botId = context.activity.recipient?.id;
