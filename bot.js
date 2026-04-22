@@ -90,7 +90,7 @@ class TimesheetBot extends ActivityHandler {
         const response = await axios.post(
           'https://flowise-app.wonderfuldesert-67959724.southindia.azurecontainerapps.io/api/v1/prediction/a3f2912a-564a-4317-872b-6eb079a2a831',
           {
-            question: userMessage,
+            input: userMessage,
             email: userEmail,
             name: userName
           },
