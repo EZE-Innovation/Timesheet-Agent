@@ -69,12 +69,18 @@ class TimesheetBot extends ActivityHandler {
         // Typing indicator
         await context.sendActivity({ type: 'typing' });
 
-        // ✅ Correct payload log
-        console.log("FINAL PAYLOAD:", {
+        const flowisePayload = {
           question: userMessage,
-          email: userEmail,
-          sessionId: context.activity.from.aadObjectId
-        });
+          sessionId: context.activity.from.aadObjectId,
+          overrideConfig: {
+            vars: {
+              USER_EMAIL: userEmail
+            }
+          }
+        };
+
+        // ✅ Correct payload log
+        console.log("FINAL PAYLOAD:", flowisePayload);
 
         // Call Flowise
         if (!userEmail) {
@@ -83,11 +89,7 @@ class TimesheetBot extends ActivityHandler {
         console.log("SESSION ID:", context.activity.from.aadObjectId);
         const response = await axios.post(
           'https://flowise-app.wonderfuldesert-67959724.southindia.azurecontainerapps.io/api/v1/prediction/a3f2912a-564a-4317-872b-6eb079a2a831',
-          {
-            question: userMessage,
-            email: userEmail,
-            sessionId: context.activity.from.aadObjectId
-          },
+          flowisePayload,
           {
             headers: {
               "Content-Type": "application/json"
